@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: order-service-debezium
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:outbox_debezium}
+    username: ${DB_USER:outbox}
+    password: ${DB_PASSWORD:outbox}
+    hikari:
+      maximum-pool-size: 70
+      connection-timeout: 2000
+      connection-init-sql: SET TIME ZONE 'UTC'
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  tracing:
+    enabled: ${TRACING_ENABLED:true}
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+    propagation:
+      type: w3c
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+logging:
+  level:
+    root: INFO
+    com.kholodilin.outbox: INFO
+
+deployment:
+  environment: ${DEPLOYMENT_ENV:local}
+
+idempotency:
+  enabled: true
+  persistence:
+    enabled: true
+    table-name: idempotency_records
+    schema:
+      mode: validate
+
+app:
+  instance-id: ${HOSTNAME:local-${random.uuid}}
+  logging:
+    json:
+      enabled: true
+      path: ${LOG_JSON_PATH:./logs}
+
+server:
+  port: 8086
