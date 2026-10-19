@@ -1,6 +1,10 @@
 package com.kholodilin.outbox.config;
 
 import com.kholodilin.outbox.events.EventEnvelope;
+import com.kholodilin.outbox.inbound.EventEnvelopeDeserializer;
+import com.kholodilin.outbox.inbound.InboundMessageParserRegistry;
+import com.kholodilin.outbox.inbound.OrderPayloadParser;
+import com.kholodilin.outbox.inbound.ServletEnvelopeParser;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -9,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -22,7 +25,8 @@ import java.util.Map;
 public class KafkaConsumerConfig {
 
     /**
-     * Builds a consumer factory for {@link EventEnvelope} JSON values without type headers.
+     * Builds a consumer factory whose value deserializer reads both envelope JSON and
+     * Debezium {@code order-payload} records into {@link EventEnvelope}.
      *
      * @param properties  stub app config (topic / batch flags used elsewhere)
      * @param environment resolves {@code spring.kafka.bootstrap-servers} and group id
@@ -38,10 +42,14 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
 
-        JacksonJsonDeserializer<EventEnvelope> valueDeserializer =
-                new JacksonJsonDeserializer<>(EventEnvelope.class, kafkaObjectMapper());
-        valueDeserializer.addTrustedPackages("com.kholodilin.outbox.events");
-        valueDeserializer.setUseTypeHeaders(false);
+        JsonMapper objectMapper = kafkaObjectMapper();
+        EventEnvelopeDeserializer valueDeserializer = new EventEnvelopeDeserializer(
+                objectMapper,
+                new InboundMessageParserRegistry(
+                        new ServletEnvelopeParser(objectMapper),
+                        new OrderPayloadParser(objectMapper)
+                )
+        );
 
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), valueDeserializer);
     }
