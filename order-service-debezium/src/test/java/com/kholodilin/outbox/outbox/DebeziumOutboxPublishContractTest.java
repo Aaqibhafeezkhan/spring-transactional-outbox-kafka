@@ -48,7 +48,7 @@ class DebeziumOutboxPublishContractTest {
     }
 
     @Test
-    void composeStartsOrderServiceAndConnectWithoutTheStub() throws Exception {
+    void composeStartsOrderServiceConnectAndTheStub() throws Exception {
         String compose = Files.readString(REPO_ROOT.resolve("docker/compose.debezium.yml"));
 
         assertThat(compose).contains("name: outbox-debezium");
@@ -63,11 +63,12 @@ class DebeziumOutboxPublishContractTest {
         assertThat(compose).contains("--topic connect-offsets");
         assertThat(compose).contains("--topic connect-status");
         assertThat(compose).contains("\"8096:8086\"");
+        assertThat(compose).contains("\"8097:8081\"");
+        assertThat(compose).contains("notification-stub:");
         assertThat(compose).contains("DB_NAME: outbox_debezium");
         assertThat(compose).contains("quay.io/debezium/connect:3.2.4.Final");
         assertThat(compose).contains("\"8087:8083\"");
         assertThat(compose).contains("./debezium/outbox-connector.json:/connector.json:ro");
-        assertThat(compose).doesNotContain("notification-stub:");
         assertThat(compose).doesNotContain("ghcr.io");
     }
 }

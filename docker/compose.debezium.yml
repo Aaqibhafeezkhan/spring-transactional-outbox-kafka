@@ -1,6 +1,6 @@
 # Debezium stack. Host ports do not overlap with servlet, reactive, or VT.
-# Order 8096, Connect REST 8087, Postgres 5435, Kafka 19095.
-# Domain JSON on orders.events. The notification stub is not part of this stack.
+# Order 8096, stub 8097, Connect REST 8087, Postgres 5435, Kafka 19095.
+# notification-stub is built from the local Dockerfile. The released GHCR image cannot read order-payload.
 name: outbox-debezium
 
 services:
@@ -102,6 +102,33 @@ services:
       - ../logs/debezium:/var/log/app
     depends_on:
       postgres:
+        condition: service_healthy
+
+  notification-stub:
+    build:
+      context: ../notification-stub
+    ports:
+      - "8097:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: outbox_debezium
+      DB_USER: outbox
+      DB_PASSWORD: outbox
+      KAFKA_BOOTSTRAP: kafka:29092
+      LOG_JSON_PATH: /var/log/app
+      DEPLOYMENT_ENV: local
+      TRACING_ENABLED: "false"
+    volumes:
+      - ../logs/debezium:/var/log/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      order-service-debezium:
         condition: service_healthy
 
   connect:
