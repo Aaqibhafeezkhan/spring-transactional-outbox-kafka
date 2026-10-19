@@ -69,6 +69,15 @@ class DebeziumOutboxPublishContractTest {
         assertThat(compose).contains("quay.io/debezium/connect:3.2.4.Final");
         assertThat(compose).contains("\"8087:8083\"");
         assertThat(compose).contains("./debezium/outbox-connector.json:/connector.json:ro");
+        assertThat(compose).contains("profiles: [\"observability\"]");
+        assertThat(compose).contains("\"3003:3000\"");
+        assertThat(compose).contains("\"5604:5601\"");
+        assertThat(compose).contains("orders-technical-dashboard.json");
+        assertThat(compose).contains("outbox-dashboard.json");
+        assertThat(compose).contains("postgres-dashboard.json");
+        assertThat(compose).contains("notification-stub-dashboard.json");
+        assertThat(compose).contains("tracing-dashboard.json");
+        assertThat(compose).contains("prometheus-debezium.yml");
         assertThat(compose).doesNotContain("ghcr.io");
     }
 }
