@@ -33,6 +33,8 @@ class DebeziumOutboxPublishContractTest {
         assertThat(config.get("key.converter").asString()).isEqualTo("org.apache.kafka.connect.storage.StringConverter");
         assertThat(config.get("value.converter").asString()).isEqualTo("org.apache.kafka.connect.json.JsonConverter");
         assertThat(config.get("value.converter.schemas.enable").asString()).isEqualTo("false");
+        assertThat(config.get("producer.override.interceptor.classes").asString())
+                .isEqualTo("com.kholodilin.outbox.connect.ConnectTraceProducerInterceptor");
         assertThat(config.get("transforms").asString()).isEqualTo("outbox,messageType,messageVersion");
         assertThat(config.get("transforms.outbox.type").asString())
                 .isEqualTo("io.debezium.transforms.outbox.EventRouter");
@@ -45,6 +47,11 @@ class DebeziumOutboxPublishContractTest {
         assertThat(config.get("transforms.messageType.value.literal").asString()).isEqualTo("order-payload");
         assertThat(config.get("transforms.messageVersion.value.literal").asString()).isEqualTo("1");
         assertThat(config.toString()).doesNotContain("envelope:");
+
+        JsonNode configOnly = JsonMapper.builder().build().readTree(
+                Files.readString(REPO_ROOT.resolve("docker/debezium/outbox-connector-config.json"))
+        );
+        assertThat(configOnly).isEqualTo(config);
     }
 
     @Test
@@ -69,6 +76,9 @@ class DebeziumOutboxPublishContractTest {
         assertThat(compose).contains("quay.io/debezium/connect:3.2.4.Final");
         assertThat(compose).contains("\"8087:8083\"");
         assertThat(compose).contains("./debezium/outbox-connector.json:/connector.json:ro");
+        assertThat(compose).contains("./debezium/outbox-connector-config.json:/connector-config.json:ro");
+        assertThat(compose).contains("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://tempo:4318/v1/traces");
+        assertThat(compose).contains("OTEL_SERVICE_NAME: debezium-connect");
         assertThat(compose).contains("profiles: [\"observability\"]");
         assertThat(compose).contains("\"3003:3000\"");
         assertThat(compose).contains("\"5604:5601\"");
