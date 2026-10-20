@@ -58,7 +58,7 @@ public class KafkaNotificationConsumer {
                 );
     }
 
-    private Flux<Void> consume(KafkaReceiver<String, EventEnvelope> receiver) {
+    private Flux<?> consume(KafkaReceiver<String, EventEnvelope> receiver) {
         return receiver.receive()
                 .doOnNext(this::acknowledgeMalformedRecord)
                 .filter(record -> record.value() != null)
@@ -67,7 +67,7 @@ public class KafkaNotificationConsumer {
                         properties.getKafka().getBatchWait()
                 )
                 .filter(batch -> !batch.isEmpty())
-                .concatMap(this::processBatch)
+                .concatMap(batch -> processBatch(batch).thenReturn(Boolean.TRUE))
                 /*
                  * Technical error terminates this receiver only.
                  * The failing batch was never acknowledged,

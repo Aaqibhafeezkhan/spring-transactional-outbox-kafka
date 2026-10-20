@@ -49,6 +49,7 @@ class RateLimitFilterTest {
     void skipsNonOrderPostRequests() {
         RateLimitFilter filter = filter(10, 10, 10);
         assertThat(filter.shouldNotFilter(new MockHttpServletRequest("GET", "/api/v1/orders"))).isTrue();
+        assertThat(filter.shouldNotFilter(new MockHttpServletRequest("POST", "/actuator/health"))).isTrue();
         assertThat(filter.shouldNotFilter(new MockHttpServletRequest("POST", "/api/v1/orders"))).isFalse();
     }
 
@@ -104,6 +105,7 @@ class RateLimitFilterTest {
         assertThat(wrapped.getReader().readLine()).contains("customerId");
         wrapped.setCharacterEncoding("UTF-8");
         ServletInputStream stream = wrapped.getInputStream();
+        assertThat(stream.isFinished()).isFalse();
         assertThat(stream.isReady()).isTrue();
         stream.setReadListener(null);
         assertThat(stream.read()).isGreaterThanOrEqualTo(0);
@@ -122,6 +124,9 @@ class RateLimitFilterTest {
         MockHttpServletRequest empty = new MockHttpServletRequest("POST", "/api/v1/orders");
         empty.setContent(new byte[0]);
         filter.doFilter(empty, new MockHttpServletResponse(), new MockFilterChain());
+
+        MockHttpServletRequest missingCustomer = orderRequestBody("{}");
+        filter.doFilter(missingCustomer, new MockHttpServletResponse(), new MockFilterChain());
 
         MockHttpServletRequest nullCustomer = orderRequestBody("{\"customerId\":null}");
         filter.doFilter(nullCustomer, new MockHttpServletResponse(), new MockFilterChain());

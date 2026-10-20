@@ -105,6 +105,15 @@ class KafkaNotificationConsumerTest {
     }
 
     @Test
+    void logsWhenReceiverFailsToStart() {
+        when(kafkaReceiver.receive()).thenThrow(new IllegalStateException("broker unavailable"));
+
+        consumer.start();
+
+        consumer.stop();
+    }
+
+    @Test
     void startSkipsPoisonAndProcessesValidRecords() {
         TestRecord poison = nullValueRecord(0, 1L);
         TestRecord valid = record(0, 2L);

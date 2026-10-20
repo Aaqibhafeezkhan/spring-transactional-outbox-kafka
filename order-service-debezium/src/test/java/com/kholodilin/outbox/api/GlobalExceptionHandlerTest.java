@@ -14,6 +14,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.sql.SQLTransientConnectionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class GlobalExceptionHandlerTest {
 
@@ -75,6 +77,18 @@ class GlobalExceptionHandlerTest {
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
         assertThat(problem.getDetail()).contains("Failed to obtain JDBC Connection");
+    }
+
+    @Test
+    void mapsCannotGetJdbcConnectionWithoutMostSpecificCause() {
+        CannotGetJdbcConnectionException ex = spy(
+                new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection"));
+        when(ex.getMostSpecificCause()).thenReturn(null);
+
+        ProblemDetail problem = handler.handleCannotGetJdbcConnection(ex);
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
+        assertThat(problem.getDetail()).isEqualTo("Failed to obtain JDBC Connection");
     }
 
     @Test
