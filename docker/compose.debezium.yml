@@ -96,6 +96,7 @@ services:
       DB_USER: outbox
       DB_PASSWORD: outbox
       SERVER_PORT: "8086"
+      SPRING_PROFILES_ACTIVE: dev
       LOG_JSON_PATH: /var/log/app
       DEPLOYMENT_ENV: local
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces

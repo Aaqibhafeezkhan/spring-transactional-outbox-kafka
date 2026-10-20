@@ -6,6 +6,7 @@ import com.kholodilin.outbox.events.CreateOrderRequest;
 import com.kholodilin.outbox.events.CreateOrderResponse;
 import com.kholodilin.outbox.events.OrderItemRequest;
 import com.kholodilin.outbox.logging.StructuredLogContext;
+import com.kholodilin.outbox.metrics.OrderServiceMetrics;
 import com.kholodilin.outbox.outbox.OutboxEventFactory;
 import com.kholodilin.outbox.persistence.OrderJdbcRepository;
 import com.kholodilin.outbox.persistence.OutboxJdbcRepository;
@@ -35,6 +36,7 @@ public class OrderTransactionService {
     private final IdempotencyService idempotencyService;
     private final OutboxEventFactory outboxEventFactory;
     private final TraceContextSupport traceContextSupport;
+    private final OrderServiceMetrics metrics;
 
     /**
      * Claims the idempotency key and either creates a new order or returns a cached replay.
@@ -45,6 +47,10 @@ public class OrderTransactionService {
      */
     @Transactional
     public OrderCreateOutcome createOrder(CreateOrderRequest request, String idempotencyKey) {
+        return metrics.orderTransaction().record(() -> persistOrder(request, idempotencyKey));
+    }
+
+    private OrderCreateOutcome persistOrder(CreateOrderRequest request, String idempotencyKey) {
         AtomicBoolean executed = new AtomicBoolean(false);
 
         ExecutionResult<CreateOrderResponse> result = idempotencyService
