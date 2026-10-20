@@ -37,7 +37,7 @@ class KafkaNotificationConsumerTest {
     @BeforeEach
     void setUp() {
         consumer = new KafkaNotificationConsumer(
-                kafkaReceiver,
+                List.of(kafkaReceiver),
                 handler,
                 new NotificationStubProperties()
         );
