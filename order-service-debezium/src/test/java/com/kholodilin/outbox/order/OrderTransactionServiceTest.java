@@ -21,6 +21,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,6 +35,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -166,13 +171,18 @@ class OrderTransactionServiceTest {
     }
 
     private OrderTransactionService service(OrderServiceMetrics metrics) {
+        lenient().when(traceContextSupport.runWithTraceParent(nullable(String.class), anyString(), any(Supplier.class)))
+                .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(2).get());
+        PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
+        lenient().when(transactionManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         return new OrderTransactionService(
                 orderJdbcRepository,
                 outboxJdbcRepository,
                 idempotencyService,
                 outboxEventFactory,
                 traceContextSupport,
-                metrics
+                metrics,
+                transactionManager
         );
     }
 
