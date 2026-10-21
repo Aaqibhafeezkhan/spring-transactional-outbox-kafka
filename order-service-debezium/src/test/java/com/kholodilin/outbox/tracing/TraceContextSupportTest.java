@@ -112,6 +112,31 @@ class TraceContextSupportTest {
         assertThat(seen).hasValue("ran");
     }
 
+    @Test
+    void runWithTraceParentSkipsSpanWhenPropagatorMissing() {
+        AtomicReference<String> seen = new AtomicReference<>();
+        support(mock(Tracer.class), null).runWithTraceParent(TRACE_PARENT, "db.persist", () -> {
+            seen.set("ran");
+            return null;
+        });
+        assertThat(seen).hasValue("ran");
+    }
+
+    @Test
+    void runWithBlankStringContinuesCurrentTrace() {
+        Tracer tracer = mock(Tracer.class);
+        Span child = mock(Span.class);
+        when(tracer.nextSpan()).thenReturn(child);
+        when(child.name("db.persist")).thenReturn(child);
+        when(child.start()).thenReturn(child);
+        when(tracer.withSpan(child)).thenReturn(mock(Tracer.SpanInScope.class));
+
+        String result = support(tracer, mock(Propagator.class)).runWithTraceParent("  ", "db.persist", () -> "saved");
+
+        assertThat(result).isEqualTo("saved");
+        verify(child).end();
+    }
+
     private static TraceContextSupport support(Tracer tracer, Propagator propagator) {
         @SuppressWarnings("unchecked")
         ObjectProvider<Tracer> tracerProvider = mock(ObjectProvider.class);
