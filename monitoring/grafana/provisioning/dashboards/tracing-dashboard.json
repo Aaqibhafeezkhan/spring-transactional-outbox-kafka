@@ -141,7 +141,7 @@
           },
           "filters": [],
           "limit": 20,
-          "query": "{ resource.service.name = \"notification-stub\" && name =~ \"notification.*\" }",
+          "query": "{ resource.service.name =~ \"notification-stub(-vt)?\" && name =~ \"notification.*\" }",
           "queryType": "traceql",
           "refId": "A",
           "tableType": "traces"
@@ -229,9 +229,14 @@
             "selected": false,
             "text": "notification-stub",
             "value": "notification-stub"
+          },
+          {
+            "selected": false,
+            "text": "notification-stub-vt",
+            "value": "notification-stub-vt"
           }
         ],
-        "query": "order-service,order-service-vt,notification-stub",
+        "query": "order-service,order-service-vt,notification-stub,notification-stub-vt",
         "type": "custom"
       },
       {
