@@ -156,7 +156,7 @@ services:
       - ../monitoring/grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
       - ../monitoring/grafana/provisioning/dashboards/orders-technical-vt-dashboard.json:/etc/grafana/provisioning/dashboards/orders-technical.json:ro
       - ../monitoring/grafana/provisioning/dashboards/postgres-dashboard.json:/etc/grafana/provisioning/dashboards/postgres.json:ro
-      - ../monitoring/grafana/provisioning/dashboards/notification-stub-dashboard.json:/etc/grafana/provisioning/dashboards/notification-stub.json:ro
+      - ../monitoring/grafana/provisioning/dashboards/notification-stub-vt-dashboard.json:/etc/grafana/provisioning/dashboards/notification-stub-vt.json:ro
       - ../monitoring/grafana/provisioning/dashboards/tracing-dashboard.json:/etc/grafana/provisioning/dashboards/tracing.json:ro
     depends_on:
       - prometheus

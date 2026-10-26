@@ -13,4 +13,4 @@ management:
 spring:
   kafka:
     consumer:
-      group-id: notification-stub-dev
+      group-id: notification-stub-vt-dev

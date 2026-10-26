@@ -14,7 +14,6 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
