@@ -5,7 +5,7 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:outbox}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:outbox_vt}
     username: ${DB_USER:outbox}
     password: ${DB_PASSWORD:outbox}
     hikari:
@@ -15,9 +15,9 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     listener:
-      observation-enabled: false
+      observation-enabled: true
     consumer:
-      group-id: notification-stub
+      group-id: notification-stub-vt
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
@@ -45,7 +45,7 @@ management:
 
 logging:
   level:
-    root: info
+    root: INFO
     com.kholodilin.outbox: INFO
 
 idempotency:
