@@ -36,8 +36,9 @@ class KafkaConsumerConfigTest {
         assertThat(envelope.occurredAt()).isEqualTo(Instant.parse("2026-07-12T10:15:30Z"));
         assertThat(envelope.payload()).containsEntry("orderId", 10);
     }
+
     @Test
-    void batchListenerRunsOnVirtualThreads() throws Exception {
+    void batchListenerRunsOnVirtualThreads() {
         KafkaConsumerConfig config = new KafkaConsumerConfig();
         NotificationStubProperties properties = new NotificationStubProperties();
         MockEnvironment environment = new MockEnvironment()
