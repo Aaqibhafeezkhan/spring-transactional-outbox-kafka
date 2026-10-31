@@ -15,11 +15,12 @@ public class AppConfig {
     /**
      * Shared Jackson 3 {@link ObjectMapper} for HTTP bodies and outbox payloads.
      * <p>
-     * Marked {@code @Primary} so it wins over the starter's {@code outboxJsonMapper}.
+     * Declared as {@link JsonMapper} so Spring Boot's {@code jacksonJsonMapper} backs off
+     * and the outbox starter reuses this mapper.
      */
     @Bean
     @Primary
-    public ObjectMapper objectMapper() {
+    public JsonMapper objectMapper() {
         return JsonMapper.builder().build();
     }
 }
